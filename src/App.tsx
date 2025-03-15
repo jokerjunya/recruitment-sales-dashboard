@@ -11,7 +11,13 @@ function App() {
   const [salesData, setSalesData] = useState<SalesData[]>(initialSalesData)
   const [recruitmentData, setRecruitmentData] = useState<RecruitmentData[]>(initialRecruitmentData)
   const [kpiData, setKpiData] = useState<KPI[]>([])
-  const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleDateString('ja-JP'))
+  const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleDateString('ja-JP', { 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  }))
 
   // KPIデータを計算
   useEffect(() => {
@@ -26,30 +32,34 @@ function App() {
     const totalApplicants = recruitmentData.reduce((sum, item) => sum + item.applicants, 0);
     const hiringRate = totalApplicants ? (totalHires / totalApplicants) * 100 : 0;
     
-    // 前年比の計算（実際のアプリではより複雑な計算が必要）
-    // ここではダミーデータを使用
-    const salesYoYGrowth = 10.2;
-    const hiresYoYGrowth = 15.5;
+    // YoY成長率の計算（実際のアプリではより複雑な計算が必要）
+    // 現在のデータには前年比が含まれているのでそれを使用
+    const lastMonthYoYGrowth = salesData.length > 0 ? salesData[salesData.length - 1].yoyGrowth || 0 : 0;
+    
+    // 顧客単価の計算（ダミーデータ - 実際のアプリでは顧客数データが必要）
+    const customerCount = 1200; // ダミーの顧客数
+    const averageRevenuePerCustomer = totalSales / customerCount;
+    const customerPriceYoYGrowth = 7.5; // ダミーの前年比成長率
     
     // KPIデータを更新
     const newKpiData: KPI[] = [
       { 
         title: '年間売上', 
         value: `${(totalSales / 1000000).toFixed(2)}百万円`, 
-        change: salesYoYGrowth, 
-        isPositive: salesYoYGrowth > 0 
+        change: lastMonthYoYGrowth, 
+        isPositive: lastMonthYoYGrowth > 0 
       },
       { 
-        title: '月間売上成長率', 
-        value: `${monthlySalesGrowth.toFixed(1)}%`, 
-        change: monthlySalesGrowth - 5, // 前月との比較（ダミー）
-        isPositive: monthlySalesGrowth > 0 
+        title: '前年比成長率', 
+        value: `${lastMonthYoYGrowth.toFixed(1)}%`, 
+        change: lastMonthYoYGrowth - 5, // 前年との比較（ダミー）
+        isPositive: lastMonthYoYGrowth > 0 
       },
       { 
-        title: '年間採用数', 
-        value: totalHires, 
-        change: hiresYoYGrowth, 
-        isPositive: hiresYoYGrowth > 0 
+        title: '顧客単価', 
+        value: `${(averageRevenuePerCustomer / 1000).toFixed(1)}千円`, 
+        change: customerPriceYoYGrowth, 
+        isPositive: customerPriceYoYGrowth > 0 
       },
       { 
         title: '採用コンバージョン率', 
@@ -60,7 +70,13 @@ function App() {
     ];
     
     setKpiData(newKpiData);
-    setLastUpdated(new Date().toLocaleDateString('ja-JP'));
+    setLastUpdated(new Date().toLocaleDateString('ja-JP', { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }));
   }, [salesData, recruitmentData]);
 
   // データインポート時の処理
@@ -77,7 +93,10 @@ function App() {
       <div className="max-w-7xl mx-auto">
         <header className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">採用・営業ダッシュボード</h1>
-          <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">CEO意思決定支援ツール</p>
+          <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">
+            CEO意思決定支援ツール
+            <span className="text-xs ml-2 text-gray-500">（最終更新: {lastUpdated}）</span>
+          </p>
         </header>
 
         {/* CSVインポーター */}
